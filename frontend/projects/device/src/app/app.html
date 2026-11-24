@@ -1,0 +1,75 @@
+<main>
+  <h1>LifeLine battery</h1>
+
+  @if (battery.problem(); as problem) {
+    <section class="notice">
+      <h2>This device's charge can't be read</h2>
+      @switch (problem) {
+        @case ('insecure') {
+          <p>The page was opened over an unsecured address. Open the address that starts with <b>https://</b> instead.</p>
+        }
+        @case ('ios') {
+          <p>iPhones and iPads don't let websites read the battery, in any browser.</p>
+        }
+        @default {
+          <p>This browser doesn't share the battery level. Open this page in Chrome, Edge or Opera.</p>
+        }
+      }
+    </section>
+  } @else if (battery.reading(); as reading) {
+    <section class="charge" [class.low]="reporter.alertOpen()">
+      <div
+        class="cell"
+        role="meter"
+        aria-label="Battery charge"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [attr.aria-valuenow]="reading.level"
+      >
+        <div class="fill" [style.width.%]="reading.level"></div>
+      </div>
+      <p class="figure">{{ reading.level }}%</p>
+      <p class="state">{{ reading.charging ? 'Charging' : 'On battery' }}</p>
+      @if (reporter.alertOpen()) {
+        <p class="warning" role="alert">Low battery. The dashboard has been alerted.</p>
+      }
+    </section>
+
+    @if (reporter.identity(); as identity) {
+      <section class="status">
+        <p><b>{{ identity.name }}</b></p>
+        @if (reporter.offline()) {
+          <p class="warning">Can't reach the server. Trying again every minute.</p>
+        } @else if (reporter.lastSent(); as sent) {
+          <p>Sent to the dashboard at {{ sent | date: 'mediumTime' }}</p>
+        } @else {
+          <p>Sending to the dashboard…</p>
+        }
+        <p class="hint">Keep this page open. Readings stop when it is closed or the screen is locked.</p>
+      </section>
+    } @else {
+      <form class="status" (submit)="connect($event, name.value, code.value)">
+        <label for="name">Name this device</label>
+        <input #name id="name" maxlength="60" required autocomplete="off" [value]="reporter.suggestedName" />
+        <label for="code" [hidden]="!reporter.codeNeeded()">Join code</label>
+        <input
+          #code
+          id="code"
+          maxlength="40"
+          autocomplete="off"
+          autocapitalize="characters"
+          [hidden]="!reporter.codeNeeded()"
+          [value]="reporter.linkCode"
+        />
+        <button class="primary" [disabled]="connecting()">
+          {{ connecting() ? 'Connecting…' : 'Share charge with dashboard' }}
+        </button>
+        @if (problem(); as message) {
+          <p class="warning" role="alert">{{ message }}</p>
+        }
+      </form>
+    }
+  } @else {
+    <p class="hint">Reading the battery…</p>
+  }
+</main>

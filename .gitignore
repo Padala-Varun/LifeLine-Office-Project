@@ -1,0 +1,11 @@
+.tools/
+
+backend/target/
+backend/data/
+backend/local/
+
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+deploy/lifeline-deploy.tar.gz

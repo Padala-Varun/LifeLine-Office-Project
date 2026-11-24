@@ -1,0 +1,102 @@
+/* Colours shared by both sites. Dark values are chosen separately, not inverted. */
+:root {
+  color-scheme: light;
+  --page: #f3f4f1;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #6f6d68;
+  --line: #e1e0d9;
+  --control-line: #8b8983;
+  --accent: #2a78d6;
+  --accent-strong: #1c5cab;
+  --accent-track: #cde2fb;
+  --critical: #d03b3b;
+  --critical-ink: #a82a2a;
+  --critical-track: #f7d4d2;
+  --critical-wash: #fdf0ef;
+  --good: #0ca30c;
+  --good-ink: #006300;
+  --idle: #a3a19a;
+  --idle-track: #e4e3dd;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --ink-3: #9b9991;
+    --line: #2c2c2a;
+    --control-line: #77756f;
+    --accent: #3987e5;
+    --accent-strong: #256abf;
+    --accent-track: #12345e;
+    --critical: #d03b3b;
+    --critical-ink: #f08a86;
+    --critical-track: #4b1d1d;
+    --critical-wash: #2a1716;
+    --good: #0ca30c;
+    --good-ink: #3fc23f;
+    --idle: #6b6963;
+    --idle-track: #2f2f2c;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--control-line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.primary {
+  min-height: 44px;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent-strong);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}

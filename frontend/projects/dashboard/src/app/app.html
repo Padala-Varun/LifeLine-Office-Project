@@ -1,0 +1,159 @@
+@switch (live.session()) {
+  @case ('checking') {
+    <p class="wait">{{ live.connection() === 'reconnecting' ? "Can't reach the server. Trying again…" : 'Loading…' }}</p>
+  }
+
+  @case ('signedOut') {
+    <main class="sign-in">
+      <form (submit)="signIn($event, username.value, password.value)">
+        <h1>LifeLine dashboard</h1>
+        <label for="username">Username</label>
+        <input #username id="username" autocomplete="username" required />
+        <label for="password">Password</label>
+        <input #password id="password" type="password" autocomplete="current-password" required />
+        @if (signInError(); as message) {
+          <p class="error" role="alert">{{ message }}</p>
+        }
+        <button class="primary" [disabled]="signingIn()">{{ signingIn() ? 'Signing in…' : 'Sign in' }}</button>
+      </form>
+    </main>
+  }
+
+  @case ('signedIn') {
+    <header>
+      <h1>LifeLine dashboard</h1>
+      <span class="connection" [class.live]="live.connection() === 'live'" role="status">
+        {{ live.connection() === 'live' ? 'Live' : live.connection() === 'connecting' ? 'Connecting…' : 'Reconnecting…' }}
+      </span>
+      <button class="quiet" (click)="live.signOut()">Sign out</button>
+    </header>
+
+    <main class="board">
+      <dl class="tiles">
+        <div [class.critical]="openAlerts().length > 0">
+          <dt>Low battery</dt>
+          <dd>{{ openAlerts().length }}</dd>
+        </div>
+        <div>
+          <dt>Online</dt>
+          <dd>{{ online() }}</dd>
+        </div>
+        <div>
+          <dt>Offline</dt>
+          <dd>{{ devices().length - online() }}</dd>
+        </div>
+      </dl>
+
+      @if (openAlerts().length) {
+        <section class="alerts" aria-labelledby="alerts-title">
+          <h2 id="alerts-title">Needs charging</h2>
+          <ul>
+            @for (alert of openAlerts(); track alert.id) {
+              <li>
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 19 18H1Z" /><path class="mark" d="M10 8v4.5M10 15v.2" /></svg>
+                <span class="who">{{ alert.deviceName }}</span>
+                <span class="level">{{ alert.device?.level ?? alert.level }}%</span>
+                <span class="when">
+                  Alerted {{ ago(alert.raisedAt) }} at {{ alert.level }}%
+                  @if (alert.device && !alert.device.online) {
+                    · offline, last seen {{ ago(alert.device.lastSeenAt) }}
+                  }
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <section aria-labelledby="devices-title">
+        <h2 id="devices-title">Devices</h2>
+        @if (devices().length) {
+          <div class="table">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Device</th>
+                  <th scope="col">Charge</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Last seen</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (device of devices(); track device.id) {
+                  <tr [class.low]="device.low" [class.offline]="!device.online">
+                    <th scope="row">
+                      {{ device.name }}<small>{{ device.platform }}</small>
+                    </th>
+                    <td>
+                      @if (device.level !== null) {
+                        <div class="charge">
+                          <b>{{ device.level }}%</b>
+                          <div
+                            class="meter"
+                            role="meter"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            [attr.aria-valuenow]="device.level"
+                            [attr.aria-label]="device.name + ' charge'"
+                            [title]="device.level + '%. Alerts below ' + live.lowBelow() + '%.'"
+                          >
+                            <div class="fill" [style.width.%]="device.level"></div>
+                            <div class="threshold" [style.left.%]="live.lowBelow()"></div>
+                          </div>
+                        </div>
+                      } @else {
+                        No reading yet
+                      }
+                    </td>
+                    <td>
+                      @if (!device.online) {
+                        <span class="tag">○ Offline</span>
+                      } @else if (device.low) {
+                        <span class="tag bad">▲ Low battery</span>
+                      } @else if (device.charging) {
+                        <span class="tag good">⚡︎ Charging</span>
+                      } @else {
+                        <span class="tag">● On battery</span>
+                      }
+                    </td>
+                    <td class="seen">{{ ago(device.lastSeenAt) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="note">The line on each bar marks {{ live.lowBelow() }}%. Offline devices show their last known charge.</p>
+        } @else {
+          <p class="empty">No devices yet. On a phone or laptop, open the device address shown in the start.ps1 window.</p>
+        }
+      </section>
+
+      @if (live.state().recentAlerts.length) {
+        <section aria-labelledby="history-title">
+          <h2 id="history-title">Recent alerts</h2>
+          <ul class="history">
+            @for (alert of live.state().recentAlerts; track alert.id) {
+              <li>
+                <span class="who">{{ alert.deviceName }}</span>
+                <span>Alerted at {{ alert.level }}%, {{ ago(alert.raisedAt) }}</span>
+                <span>✓ {{ outcome(alert) }} {{ ago(alert.resolvedAt!) }}</span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </main>
+
+    <div class="toasts" role="alert">
+      @for (alert of live.toasts(); track alert.id) {
+        <div class="toast">
+          <div>
+            <b>Low battery: {{ alert.deviceName }}</b>
+            <span>{{ alert.level }}% and not charging</span>
+          </div>
+          <button (click)="live.dismiss(alert)" [attr.aria-label]="'Dismiss alert for ' + alert.deviceName">✕</button>
+        </div>
+      }
+    </div>
+  }
+}
