@@ -52,6 +52,15 @@ The dashboard username and password are set in `backend/src/main/resources/appli
 `start.ps1` creates the certificate password once in `backend/local/secrets.json`, which git ignores.
 On your own network, anyone who can open the device page can add a device. Set `lifeline.join-code` in the same file to require a code.
 
+## Deploy to the internet (Render, free, no card)
+
+1. Push this repository to GitHub.
+2. In Render, choose New, then Blueprint, and pick the repository. Enter a join code when asked.
+3. When the deploy is live, read the dashboard password in the service's Environment tab. The username is `admin`.
+4. Add devices with `https://YOUR-SERVICE.onrender.com/device/#join=YOUR_JOIN_CODE`.
+
+Every push to `main` deploys again. The free plan sleeps after 15 minutes without traffic, and its data is erased whenever it sleeps, restarts or deploys. Open devices come back by themselves, but alert history is lost.
+
 ## Deploy to the internet (Google Cloud free tier)
 
 Both websites and the server run on one free `e2-micro` VM, with HTTPS from Caddy and a free DuckDNS name.

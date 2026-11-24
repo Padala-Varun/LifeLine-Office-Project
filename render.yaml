@@ -1,0 +1,15 @@
+# Render reads this file. In Render: New > Blueprint > choose this repository.
+services:
+  - type: web
+    name: lifeline-office
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /api/auth/me
+    envVars:
+      # Made by Render. Read it in the service's Environment tab.
+      - key: LIFELINE_DASHBOARD_PASSWORD
+        generateValue: true
+      # Render asks for this once. Use at least 8 letters and digits.
+      - key: LIFELINE_JOIN_CODE
+        sync: false
